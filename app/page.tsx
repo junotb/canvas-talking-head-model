@@ -1,113 +1,187 @@
+'use client';
+
 import Image from 'next/image'
+import { useEffect, useRef } from 'react';
+import { FrameData } from '../types/types';
 
-export default function Home() {
+const Home = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imageCache = new Map();
+  let ctx: CanvasRenderingContext2D;
+  let ttsAudio: HTMLAudioElement;
+
+  const loadImage = (id: string): Promise<HTMLImageElement> => {
+    return new Promise(resolve => {
+      const image = document.getElementById(id) as HTMLImageElement;
+      if (image.complete) {
+        return resolve(image);
+      }
+
+      image.onload = () => {
+        resolve(image);
+      };
+    });
+  }
+
+  const loadImageBySrc = (pathname: string) => {
+    if (imageCache.has(pathname)) {
+      return Promise.resolve(imageCache.get(pathname))
+    }
+
+    return new Promise(resolve => {
+      const image = new window.Image();
+      image.onload = () => {
+        imageCache.set(pathname, image);
+        resolve(image);
+      };
+      image.src = pathname;
+    });
+  }
+
+  const drawImage = async (id: string) => {
+    const image = await loadImage(id);
+    ctx.drawImage(image, 0, 0);
+  }
+
+  const clearEyes = () => {
+    ctx.fillStyle = 'rgb(90, 81, 74)';
+    ctx.fillRect(293, 156, 40, 44);
+    ctx.fillRect(167, 156, 40, 44);
+  }
+
+  const sleep = (ms: number) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  const eyeBlink = async () => {
+    const leftEye = await loadImage('eye-l');
+    const rightEye = await loadImage('eye-r');
+
+    const targetHeight = Math.floor(leftEye.height * 0.2);
+    let height = leftEye.height;
+    const ANIMATION_STEP = 20;
+
+    while (height > targetHeight) {
+      await sleep(ANIMATION_STEP);
+      height *= 0.8;
+      clearEyes();
+      ctx.drawImage(leftEye, 0, (leftEye.height - height) / 3, leftEye.width, height);
+      ctx.drawImage(rightEye, 0, (rightEye.height - height) / 3, rightEye.width, height);
+    }
+
+    await sleep(ANIMATION_STEP);
+    clearEyes();
+    ctx.drawImage(leftEye, 0, (leftEye.height - targetHeight) / 3, leftEye.width, targetHeight);
+    ctx.drawImage(rightEye, 0, (rightEye.height - targetHeight) / 3, rightEye.width, targetHeight);
+
+    await sleep(75);
+    clearEyes();
+    await drawImage('eye-l-closed');
+    await drawImage('eye-r-closed');
+
+    await sleep(120);
+    clearEyes();
+    await drawImage('eye-l');
+    await drawImage('eye-r');
+  }
+
+  const drawMouthFrame = async (id: string) => {
+    const image = await loadImageBySrc(`/images/mouth-${id}.png`);
+
+    ctx.fillStyle = `rgb(90, 81, 74)`;
+    ctx.fillRect(200, 165, 100, 75);
+    ctx.drawImage(image, 0, 0);
+  }
+
+  const playAudio = async (id: string) => {
+    if (ttsAudio) {
+      ttsAudio.pause();
+    }
+    ttsAudio = new Audio(`${id}.wav`);
+    
+    const response = await fetch(new Request(`${id}.json`), {
+      method: 'GET',
+      mode: 'no-cors'
+    });
+    const visemeData: FrameData[] = await response.json();
+
+    ttsAudio.ontimeupdate = (event) => {
+      const currentFrame = visemeData.find(frameData => {
+        const TRANSITION_DELAY = 60;
+        return frameData.offset - (TRANSITION_DELAY / 2) >= ttsAudio.currentTime * 1000;
+      });
+      drawMouthFrame(currentFrame!.id ?? 0);
+    };
+
+    ttsAudio.play();
+  }
+
+  useEffect(() => {
+    const init = async () => {
+      const BLINK_INTERVAL = 3500;
+      ctx = canvasRef.current!.getContext('2d')!;
+
+      await drawImage('body');
+      await drawImage('eye-l');
+      await drawImage('eye-r');
+
+      const image = await loadImageBySrc('/images/mouth-0.png');
+      ctx.drawImage(image, 0, 0);
+
+      eyeBlink();
+      setInterval(() => {
+        eyeBlink();
+      }, BLINK_INTERVAL);
+    };
+    init();
+  }, []);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
+    <main className='flex min-h-screen flex-col items-center justify-between p-24'>
+      <canvas
+        id='canvas'
+        ref={canvasRef}
+        width={512}
+        height={512}
+      />
+      <div className=''>
         <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+          id='body'
+          src='/images/body.png'
+          alt={''}
+          width={512}
+          height={512}
         />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+        <Image
+          id='eye-l'
+          src='/images/eye-l.png'
+          alt={''}
+          width={512}
+          height={512}
+        />
+        <Image
+          id='eye-l-closed'
+          src='/images/eye-l-closed.png'
+          alt={''}
+          width={512}
+          height={512}
+        />
+        <Image
+          id='eye-r'
+          src='/images/eye-r.png'
+          alt={''}
+          width={512}
+          height={512}
+        />
+        <Image
+          id='eye-r-closed'
+          src='/images/eye-r-closed.png'
+          alt={''}
+          width={512}
+          height={512}
+        />
       </div>
     </main>
   )
 }
+export default Home;
