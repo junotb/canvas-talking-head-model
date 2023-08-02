@@ -1,5 +1,6 @@
 declare global {
   interface Window {
+    SpeechSDK: any;
     Image: {   
       prototype: HTMLImageElement;
       new (): HTMLImageElement;
@@ -7,7 +8,7 @@ declare global {
   }
 }
 
-export type FrameData = {
+export type Viseme = {
   id: string,
   offset: number
 }
