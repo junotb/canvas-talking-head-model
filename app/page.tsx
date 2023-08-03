@@ -22,7 +22,7 @@ const Home = () => {
     const max = parseInt(event.currentTarget.getAttribute('max')!);
     const value = parseInt(event.currentTarget.value);
 
-    if (Number.isNaN(value)) {
+    if (value === 0 || Number.isNaN(value)) {
       event.currentTarget.value = '0';
       return;
     }
