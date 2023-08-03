@@ -27,14 +27,14 @@ const Home = () => {
       return;
     }
     if (value < min) {
-      event.currentTarget.value = min.toString();
+      event.currentTarget.value = `${min.toString()}%`;
       return;
     }
     if (value > max) {
-      event.currentTarget.value = max.toString();
+      event.currentTarget.value = `${max.toString()}%`;
       return;
     }
-    event.currentTarget.value = value.toString();
+    event.currentTarget.value = `${value.toString()}%`;
   }
 
   const handleClick = () => {
