@@ -11,11 +11,21 @@ const Home = () => {
   const rateRef = useRef<HTMLInputElement>(null);
   const pitchRef = useRef<HTMLInputElement>(null);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+    console.log('handleFocus');
+    event.currentTarget.value = '';
+  }
+
+  const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    console.log('handleBlur');
     const min = parseInt(event.currentTarget.getAttribute('min')!);
     const max = parseInt(event.currentTarget.getAttribute('max')!);
     const value = parseInt(event.currentTarget.value);
 
+    if (Number.isNaN(value)) {
+      event.currentTarget.value = '0';
+      return;
+    }
     if (value < min) {
       event.currentTarget.value = min.toString();
       return;
@@ -30,8 +40,8 @@ const Home = () => {
   const handleClick = () => {
     const voice = voiceRef.current!.value;
     const script = scriptRef.current!.value;
-    const rate = parseInt(rateRef.current!.value);
-    const pitch = parseInt(pitchRef.current!.value);
+    const rate = rateRef.current!.value;
+    const pitch = pitchRef.current!.value;
 
     mimiRef.current!.activeMimi(voice, script, rate, pitch);
   }
@@ -67,32 +77,32 @@ const Home = () => {
         <div className='flex items-center gap-4'>
           <p>Rate: </p>
           <input
-            type='number'
+            type='text'
             name='rate'
             ref={rateRef}
-            className='border-2 border-white focus:border-neutral-500 outline-none w-full px-4 py-2 bg-transparent'
+            className='border-2 border-white focus:border-neutral-500 outline-none w-full px-4 py-2 bg-transparent text-right'
             placeholder='Rate'
             min={-100}
             max={100}
             defaultValue={0}
-            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
           />
-          <p>%</p>
         </div>
         <div className='flex items-center gap-4'>
           <p>Pitch: </p>
           <input
-            type='number'
+            type='text'
             name='pitch'
             ref={pitchRef}
-            className='border-2 border-white focus:border-neutral-500 outline-none w-full px-4 py-2 bg-transparent'
+            className='border-2 border-white focus:border-neutral-500 outline-none w-full px-4 py-2 bg-transparent text-right'
             placeholder='Pitch'
             min={-100}
             max={100}
             defaultValue={0}
-            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
           />
-          <p>%</p>
         </div>
         <button
           className='border-2 border-white active:border-neutral-500 active:text-neutral-500 px-4 py-2 w-full'

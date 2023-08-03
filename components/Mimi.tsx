@@ -8,8 +8,8 @@ export type MimiHandle = {
   activeMimi: (
     voice: string,
     script: string,
-    rate: number,
-    pitch: number
+    rate: string,
+    pitch: string
   ) => void;
 }
 
@@ -31,7 +31,7 @@ const Mimi = (props: {}, ref: ForwardedRef<MimiHandle>) => {
     }
   }));
 
-  const speakMimi = (voice: string, script: string, rate: number, pitch: number) => {
+  const speakMimi = (voice: string, script: string, rate: string, pitch: string) => {
     // Synthesizer 객체 생성
     const audioDestination = new window.SpeechSDK.SpeakerAudioDestination();    
     const speechConfig = window.SpeechSDK.SpeechConfig.fromSubscription(SPEECH_KEY, SPEECH_REGION);
