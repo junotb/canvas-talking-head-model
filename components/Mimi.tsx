@@ -1,37 +1,39 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { Viseme } from '../types/types';
 import Script from 'next/script';
 
-const Mimi = ({
-  mimiProps
-}: {
-  mimiProps: {
+export type MimiHandle = {
+  activeMimi: (
     voice: string,
     script: string,
     rate: number,
     pitch: number
-  }
-}) => {
-  const voice = mimiProps.voice;
-  const script = mimiProps.script;
-  const rate = mimiProps.rate;
-  const pitch = mimiProps.pitch;
+  ) => void;
+}
 
+const Mimi = (props: {}, ref: ForwardedRef<MimiHandle>) => {
   const SPEECH_KEY = process.env.SPEECH_KEY!;
   const SPEECH_REGION = process.env.SPEECH_REGION!;
-
+  
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageCache = new Map();
-  const TRANSITION_DELAY = 60;
-  let ctx: CanvasRenderingContext2D;
   let ttsAudio: HTMLAudioElement;
-  let audioDestination: any;
+  
+  useImperativeHandle(ref, () => ({
+    activeMimi(voice, script, rate, pitch) {
+      if (voice === '' || script === '') {
+        return;
+      }
 
-  const tts = () => {
+      speakMimi(voice, script, rate, pitch);
+    }
+  }));
+
+  const speakMimi = (voice: string, script: string, rate: number, pitch: number) => {
     // Synthesizer 객체 생성
-    audioDestination = new window.SpeechSDK.SpeakerAudioDestination();    
+    const audioDestination = new window.SpeechSDK.SpeakerAudioDestination();    
     const speechConfig = window.SpeechSDK.SpeechConfig.fromSubscription(SPEECH_KEY, SPEECH_REGION);
     const audioConfig = window.SpeechSDK.AudioConfig.fromSpeakerOutput(audioDestination);
     let synthesizer = new window.SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
@@ -117,13 +119,13 @@ const Mimi = ({
 
   const drawImage = async (pathname: string) => {
     const image = await loadImageBySrc(pathname);
-    ctx.drawImage(image, 0, 0);
+    canvasRef.current!.getContext('2d')!.drawImage(image, 0, 0);
   }
 
   const clearEyes = () => {
-    ctx.fillStyle = 'rgb(90, 81, 74)';
-    ctx.fillRect(293, 156, 40, 44);
-    ctx.fillRect(167, 156, 40, 44);
+    canvasRef.current!.getContext('2d')!.fillStyle = 'rgb(90, 81, 74)';
+    canvasRef.current!.getContext('2d')!.fillRect(293, 156, 40, 44);
+    canvasRef.current!.getContext('2d')!.fillRect(167, 156, 40, 44);
   }
 
   const sleep = (ms: number) => {
@@ -142,14 +144,14 @@ const Mimi = ({
       await sleep(ANIMATION_STEP);
       height *= 0.8;
       clearEyes();
-      ctx.drawImage(leftEye, 0, (leftEye.height - height) / 3, leftEye.width, height);
-      ctx.drawImage(rightEye, 0, (rightEye.height - height) / 3, rightEye.width, height);
+      canvasRef.current!.getContext('2d')!.drawImage(leftEye, 0, (leftEye.height - height) / 3, leftEye.width, height);
+      canvasRef.current!.getContext('2d')!.drawImage(rightEye, 0, (rightEye.height - height) / 3, rightEye.width, height);
     }
 
     await sleep(ANIMATION_STEP);
     clearEyes();
-    ctx.drawImage(leftEye, 0, (leftEye.height - targetHeight) / 3, leftEye.width, targetHeight);
-    ctx.drawImage(rightEye, 0, (rightEye.height - targetHeight) / 3, rightEye.width, targetHeight);
+    canvasRef.current!.getContext('2d')!.drawImage(leftEye, 0, (leftEye.height - targetHeight) / 3, leftEye.width, targetHeight);
+    canvasRef.current!.getContext('2d')!.drawImage(rightEye, 0, (rightEye.height - targetHeight) / 3, rightEye.width, targetHeight);
 
     await sleep(75);
     clearEyes();
@@ -165,9 +167,9 @@ const Mimi = ({
   const drawMouthFrame = async (id: string) => {
     const image = await loadImageBySrc(`/images/mouth-${id}.png`);
 
-    ctx.fillStyle = 'rgb(90, 81, 74)';
-    ctx.fillRect(200, 165, 100, 75);
-    ctx.drawImage(image, 0, 0);
+    canvasRef.current!.getContext('2d')!.fillStyle = 'rgb(90, 81, 74)';
+    canvasRef.current!.getContext('2d')!.fillRect(200, 165, 100, 75);
+    canvasRef.current!.getContext('2d')!.drawImage(image, 0, 0);
   }
 
   const playAudio = async (audioUrl: string, visemes: Viseme[]) => {
@@ -177,6 +179,7 @@ const Mimi = ({
     ttsAudio = new Audio(audioUrl);
 
     ttsAudio.ontimeupdate = () => {
+      const TRANSITION_DELAY = 60;
       const currentViseme = visemes.find(viseme => {
         return viseme.offset - (TRANSITION_DELAY / 2) >= ttsAudio.currentTime * 1000;
       });
@@ -190,30 +193,23 @@ const Mimi = ({
   }
 
   useEffect(() => {
-    const init = async () => {
-      const BLINK_INTERVAL = 3500;
-      ctx = canvasRef.current!.getContext('2d')!;
-
+    const drawMimi = async () => {
       const imageIds = ['/images/body.png', '/images/eye-l.png', '/images/eye-r.png', '/images/mouth-0.png'];
       imageIds.forEach(async (imageId) => {        
         const image = await loadImageBySrc(imageId);
-        ctx.drawImage(image, 0, 0);
+        canvasRef.current!.getContext('2d')!.drawImage(image, 0, 0);
       });
 
-      eyeBlink();
+      const BLINK_INTERVAL = 3500;
       setInterval(() => {
         eyeBlink();
       }, BLINK_INTERVAL);
     };
-    init();
+    drawMimi().catch((e) => {
+      // handle the error as needed
+      console.error('An error occurred while fetching the data: ', e)
+    });
   }, []);
-
-  useEffect(() => {
-    if (voice === '' || script === '') {
-      return;
-    }
-    tts();
-  }, [voice, script, rate, pitch]);
 
   return (
     <>
@@ -226,5 +222,5 @@ const Mimi = ({
       />
     </>
   )
-}
-export default Mimi;
+};
+export default forwardRef<MimiHandle, any>(Mimi);

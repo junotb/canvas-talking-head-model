@@ -1,19 +1,15 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import Mimi from '@/components/Mimi';
+import { useRef } from 'react';
+import Mimi, { MimiHandle } from '@/components/Mimi';
 
 const Home = () => {
+  const mimiRef = useRef<MimiHandle>(null);
+
   const voiceRef = useRef<HTMLSelectElement>(null);
   const scriptRef = useRef<HTMLTextAreaElement>(null);
   const rateRef = useRef<HTMLInputElement>(null);
   const pitchRef = useRef<HTMLInputElement>(null);
-  const [mimiProps, setMimiProps] = useState({
-    voice: '',
-    script: '',
-    rate: 0,
-    pitch: 0
-  });
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const min = parseInt(event.currentTarget.getAttribute('min')!);
@@ -37,21 +33,13 @@ const Home = () => {
     const rate = parseInt(rateRef.current!.value);
     const pitch = parseInt(pitchRef.current!.value);
 
-    const props = {
-      voice: voice,
-      script: script,
-      rate: rate,
-      pitch: pitch
-    }
-    setMimiProps(props);
+    mimiRef.current!.activeMimi(voice, script, rate, pitch);
   }
 
   return (
     <main className='flex flex-col items-center overflow-hidden'>
       <div>
-        <Mimi
-          mimiProps={mimiProps}
-        />
+        <Mimi ref={mimiRef} />
       </div>
       <div className='w-64 space-y-4'>
         <div className='flex items-center gap-4'>
