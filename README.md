@@ -1,5 +1,7 @@
 # Real-time Talking Head Model using Canvas
 
+forked from [jetfontanilla](https://github.com/jetfontanilla/canvas-talking-head-model)
+
 Proof of concept for a canvas-based talking head model
 
 This uses the following technologies:
