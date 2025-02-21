@@ -66,7 +66,7 @@ const Home = () => {
             <select
               name='voice'
               ref={voiceRef}
-              className='border-2 border-white outline-none px-4 py-2 w-full bg-transparent'
+              className='border-2 border-white outline-hidden px-4 py-2 w-full bg-transparent'
             >
               <option value='en-US-JasonNeural'>Jason</option>
               <option value='en-US-CoraNeural'>Cora</option>
@@ -79,7 +79,7 @@ const Home = () => {
             <textarea
               name='script'
               ref={scriptRef}
-              className='border-2 border-white focus:border-neutral-500 outline-none px-4 py-2 w-full bg-transparent'
+              className='border-2 border-white focus:border-neutral-500 outline-hidden px-4 py-2 w-full bg-transparent'
             />
           </div>
           <div className='flex items-center gap-4'>
@@ -88,7 +88,7 @@ const Home = () => {
               type='text'
               name='rate'
               ref={rateRef}
-              className='border-2 border-white focus:border-neutral-500 outline-none w-full px-4 py-2 bg-transparent text-right'
+              className='border-2 border-white focus:border-neutral-500 outline-hidden w-full px-4 py-2 bg-transparent text-right'
               min={-100}
               max={100}
               defaultValue={0}
@@ -102,7 +102,7 @@ const Home = () => {
               type='text'
               name='pitch'
               ref={pitchRef}
-              className='border-2 border-white focus:border-neutral-500 outline-none w-full px-4 py-2 bg-transparent text-right'
+              className='border-2 border-white focus:border-neutral-500 outline-hidden w-full px-4 py-2 bg-transparent text-right'
               min={-100}
               max={100}
               defaultValue={0}
