@@ -1,14 +1,14 @@
-declare global {
-  interface Window {
-    SpeechSDK: any;
-    Image: {   
-      prototype: HTMLImageElement;
-      new (): HTMLImageElement;
-    };
-  }
+interface MimiHandle {
+  activeMimi: (
+    voice: string,
+    expressStyle: string,
+    phrase: string,
+    rate: string,
+    pitch: string
+  ) => void;
 }
 
-export type Viseme = {
-  id: string,
-  offset: number
+interface Viseme {
+  audioOffset: number;
+  visemeId: number;
 }

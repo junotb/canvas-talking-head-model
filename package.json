@@ -14,6 +14,7 @@
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
     "eslint": "8.45.0",
+    "microsoft-cognitiveservices-speech-sdk": "^1.42.0",
     "next": "15.1.7",
     "postcss": "8.4.26",
     "react": "19.0.0",
