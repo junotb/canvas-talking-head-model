@@ -56,7 +56,10 @@ const Home = () => {
           <Link href='/mimi'>Mimi</Link>
         </div>
       </div>
-      <div className='mt-12'>
+      <div className='mt-12'>        
+        <div>
+          <Mimi ref={mimiRef} />
+        </div>
         <div className='w-64 space-y-4'>
           <div className='flex items-center gap-4'>
             <p>Voice: </p>
@@ -65,10 +68,10 @@ const Home = () => {
               ref={voiceRef}
               className='border-2 border-white outline-none px-4 py-2 w-full bg-transparent'
             >
-              <option value='en-US-CoraNeural'>Cora</option>
               <option value='en-US-JasonNeural'>Jason</option>
-              <option value='en-GB-AbbiNeural'>Abbi</option>
+              <option value='en-US-CoraNeural'>Cora</option>
               <option value='en-GB-RyanNeural'>Ryan</option>
+              <option value='en-GB-AbbiNeural'>Abbi</option>
             </select>
           </div>
           <div className='flex items-center gap-4'>
