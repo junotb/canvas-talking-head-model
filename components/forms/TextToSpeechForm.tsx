@@ -44,6 +44,7 @@ export default function TextToSpeechForm({ onSubmit }: TextToSpeechFormProps) {
           className="border border-gray-700 w-full px-4 py-2 rounded-lg"
           min={-100}
           max={100}
+          defaultValue={1}
           placeholder="Rate"/>
         <input
           type="text"
@@ -51,9 +52,15 @@ export default function TextToSpeechForm({ onSubmit }: TextToSpeechFormProps) {
           className="border border-gray-700 w-full px-4 py-2 rounded-lg"
           min={-100}
           max={100}
+          defaultValue={0}
           placeholder="Pitch"/>
       </div>
-      <textarea name="phrase" placeholder="Phrase" className="w-full p-2 border border-gray-700 focus:bg-gray-400/10 rounded-lg" rows={8} />
+      <textarea
+        name="phrase"
+        placeholder="Phrase"
+        className="w-full p-2 border border-gray-700 focus:bg-gray-400/10 rounded-lg"
+        rows={8}
+        defaultValue="Hello, how are you?" />
       <button type="submit" className="w-full p-2 border border-gray-700 hover:bg-gray-400/10 rounded-lg">Submit</button>
     </form>
   );
