@@ -1,7 +1,7 @@
 'use client';
 
 import Mimi from '@/components/Mimi';
-import TextToSpeechForm from '@/components/forms/TextToSpeech';
+import TextToSpeechForm from '@/components/forms/TextToSpeechForm';
 import { useRef } from 'react';
 
 export default function Home() {
