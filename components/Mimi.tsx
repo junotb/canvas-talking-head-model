@@ -9,11 +9,11 @@ const Mimi = (props: {}, ref: ForwardedRef<MimiHandle>) => {
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
   
   useImperativeHandle(ref, () => ({
-    async activeMimi(voice, expressStyle, phrase, rate, pitch) {
+    async activeMimi(speechKey, speechRegion, voice, expressStyle, phrase, rate, pitch) {
       try {
-        if (!voice || !expressStyle || !phrase || !rate || !pitch) return;
+        if (!speechKey || !speechRegion || !voice || !expressStyle || !phrase || !rate || !pitch) return;
         try {
-          const result = await texttospeech(voice, expressStyle, phrase, rate, pitch);
+          const result = await texttospeech(speechKey, speechRegion, voice, expressStyle, phrase, rate, pitch);
           if (!result) throw new Error('음성 합성 실패');
 
           const { audio, visemes } = result;
