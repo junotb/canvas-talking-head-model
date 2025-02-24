@@ -1,5 +1,7 @@
 interface MimiHandle {
   activeMimi: (
+    speechKey: string,
+    speechRegion: string,
     voice: string,
     expressStyle: string,
     phrase: string,
